@@ -18,13 +18,13 @@ beautifulsoup4==4.12.2
 lxml==4.9.3
 
 Pillow==10.0.1
-opencv-python-headless==4.8.1.78   # ✅ Light version (Render compatible)
+opencv-python-headless==4.8.1.78
 
 numpy==1.24.3
 pandas==2.0.3
 
 gunicorn==21.2.0
-gevent==22.10.2   # ✅ Stable version (No wheel error)
+gevent==22.10.2
 
 cryptography==41.0.4
 pyjwt==2.8.0
