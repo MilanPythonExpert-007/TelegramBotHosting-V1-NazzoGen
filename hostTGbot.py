@@ -53,12 +53,10 @@ import atexit
 import requests # For polling exceptions
 
 # --- Flask Keep Alive ---
-import markupsafe
-import sys
-sys.modules['jinja2'].Markup = markupsafe.Markup  # Monkey patch for compatibility
 from flask import Flask
 from threading import Thread
-from markupsafe import escape
+# Naya import
+from markupsafe import Markup, escape
 
 app = Flask('')
 
@@ -91,16 +89,16 @@ def get_uptime():
 # --- End Uptime Tracking ---
 
 # --- Configuration ---
-TOKEN = '7948712539:AAHHKG5aIVFcBYsSl9SLbYfaGExXv89r7dI'
+TOKEN = '8008021512:AAGRv8fBEGVoTorA_jU5OM2hSFPUhigrKPo'
 OWNER_ID = 7666198278
 ADMIN_ID = 7666198278
 YOUR_USERNAME = '@Nexuussssex'
 UPDATE_CHANNEL = 'https://t.me/mpx7ai'
 
 # A4F API Configuration
-A4F_API_URL = "https://api.a4f.co/v1/chat/completions"
-A4F_API_KEY = "ddc-a4f-9d06c9a8b0ad4098959c676b16336dac"
-A4F_MODEL = "provider-6/gpt-4.1"
+A4F_API_URL = "https://samuraiapi.in/v1/chat/completions"
+A4F_API_KEY = "sk-NK6SS9tpWghyFJwkZLoCis1sMaF6RwQ5WF09mUoKKR0VKCm7"
+A4F_MODEL = "provider10-claude-sonnet-4-20250514(clinesp)"
 
 # Folder setup - using absolute paths
 BASE_DIR = os.path.abspath(os.path.dirname(__file__)) # Get script's directory
