@@ -1,3 +1,34 @@
+# ╔════════════════════════════════════════════════════════════════════╗
+# ║                                                                    ║
+# ║   ███╗   ███╗██╗██╗      █████╗ ███╗   ██╗                         ║
+# ║   ████╗ ████║██║██║     ██╔══██╗████╗  ██║                         ║
+# ║   ██╔████╔██║██║██║     ███████║██╔██╗ ██║                         ║
+# ║   ██║╚██╔╝██║██║██║     ██╔══██║██║╚██╗██║                         ║
+# ║   ██║ ╚═╝ ██║██║███████╗██║  ██║██║ ╚████║                         ║
+# ║   ╚═╝     ╚═╝╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝                         ║
+# ║                                                                   ║
+# ║                                                                              ║
+# ║   ██╗  ██╗ ██████╗ ███████╗████████╗██╗███╗   ██╗ ██████╗                   ║
+# ║   ██║  ██║██╔═══██╗██╔═══╝╚══██╔══╝██║████╗  ██║██╔════╝                   ║
+# ║   ███████║██║   ██║███████╗   ██║   ██║██╔██╗ ██║██║  ███╗                  ║
+# ║   ██╔══██║██║   ██║╚════██║   ██║   ██║██║╚██╗██║██║   ██║                  ║
+# ║   ██║  ██║╚██████╔╝███████║   ██║   ██║██║ ╚████║╚██████╔╝                  ║
+# ║   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝                   ║
+# ║                                                                              ║
+# ║   🔥 PROJECT : Milan Hosting - Premium Python Bot Solution                 ║
+# ║   🌐 WEBSITE : https://milanxhosting.com                                     ║
+# ║   ✉️ CONTACT : contact@milanxhosting.com                                    ║
+# ║   👨‍💻 DEVELOPER : @_patelmilan07                                            ║
+# ║   ⚠️ LICENSE : Proprietary - All Rights Reserved                            ║
+# ║                                                                              ║
+# ║   "Empowering Your Digital Presence with Reliable Hosting Solutions"         ║
+# ║                                                                              ║
+# ║    🔥 Project : Milan Hosting Python Bot                         ║
+# ║    🔥 Author  : @_patelmilan07                                     ║
+# ║    🔥 License : Private - Do Not Distribute                        ║
+# ║                                                                    ║
+# ╚════════════════════════════════════════════════════════════════════╝
+
 import telebot
 import subprocess
 import os
@@ -8,8 +39,8 @@ from telebot import types
 import time
 from datetime import datetime, timedelta
 # Removed unused telegram.* imports as we are using telebot consistently
-# from telegram import Update
-# from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
 import psutil
 import sqlite3
 import json # Kept in case needed elsewhere, but not used in provided logic
@@ -22,8 +53,12 @@ import atexit
 import requests # For polling exceptions
 
 # --- Flask Keep Alive ---
+import markupsafe
+import sys
+sys.modules['jinja2'].Markup = markupsafe.Markup  # Monkey patch for compatibility
 from flask import Flask
 from threading import Thread
+from markupsafe import escape
 
 app = Flask('')
 
@@ -43,12 +78,29 @@ def keep_alive():
     print("Flask Keep-Alive server started.")
 # --- End Flask Keep Alive ---
 
+# --- Bot Uptime Tracking ---
+BOT_START_TIME = datetime.now()
+
+def get_uptime():
+    """Calculate and format bot uptime"""
+    uptime = datetime.now() - BOT_START_TIME
+    days = uptime.days
+    hours, remainder = divmod(uptime.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{days}d {hours}h {minutes}m {seconds}s"
+# --- End Uptime Tracking ---
+
 # --- Configuration ---
-TOKEN = '8009147902:AAGyQgyckcSfu_hy1N_OsZ1rYOhNpGxw5Ec' # Replace with your actual token
-OWNER_ID = 5524867269 # Replace with your Owner ID
-ADMIN_ID = 5524867269 # Replace with your Admin ID (can be same as Owner)
-YOUR_USERNAME = '@patelmilan07' # Replace with your Telegram username (without the @)
-UPDATE_CHANNEL = 'https://t.me/CAFI_NETWORK2' # Replace with your update channel link
+TOKEN = '7948712539:AAHHKG5aIVFcBYsSl9SLbYfaGExXv89r7dI'
+OWNER_ID = 7666198278
+ADMIN_ID = 7666198278
+YOUR_USERNAME = '@Nexuussssex'
+UPDATE_CHANNEL = 'https://t.me/mpx7ai'
+
+# A4F API Configuration
+A4F_API_URL = "https://api.a4f.co/v1/chat/completions"
+A4F_API_KEY = "ddc-a4f-9d06c9a8b0ad4098959c676b16336dac"
+A4F_MODEL = "provider-6/gpt-4.1"
 
 # Folder setup - using absolute paths
 BASE_DIR = os.path.abspath(os.path.dirname(__file__)) # Get script's directory
@@ -87,18 +139,19 @@ logger = logging.getLogger(__name__)
 
 # --- Command Button Layouts (ReplyKeyboardMarkup) ---
 COMMAND_BUTTONS_LAYOUT_USER_SPEC = [
-    ["📢 Updates Channel"],
+    ["📢 Updates Channel", "⏱ Uptime"],
     ["📤 Upload File", "📂 Check Files"],
-    ["⚡ Bot Speed", "📊 Statistics"], # Statistics button kept for users, logic will restrict if not admin
-    ["📞 Contact Owner"]
-]
+    ["⚡ Bot Speed", "📊 Statistics"],
+    ["📞 Contact Owner", "🤖 MPX Ai"]  # Added MPX AI button
+] # Statistics button kept for users, logic will restrict if not admin
 ADMIN_COMMAND_BUTTONS_LAYOUT_USER_SPEC = [
-    ["📢 Updates Channel"],
+    ["📢 Updates Channel", "/ping"],
     ["📤 Upload File", "📂 Check Files"],
     ["⚡ Bot Speed", "📊 Statistics"],
     ["💳 Subscriptions", "📢 Broadcast"],
-    ["🔒 Lock Bot", "🟢 Running All Code"], # Changed "Free Mode" to "Running All Code"
-    ["👑 Admin Panel", "📞 Contact Owner"]
+    ["🔒 Lock Bot", "🟢 Running All Code"],
+    ["👑 Admin Panel", "📞 Contact Owner"],
+    ["🤖 MPX Ai", "⏱ Uptime"], # Added MPX AI button
 ]
 
 # --- Database Setup ---
@@ -792,32 +845,36 @@ def create_main_menu_inline(user_id):
         types.InlineKeyboardButton('📤 Upload File', callback_data='upload'),
         types.InlineKeyboardButton('📂 Check Files', callback_data='check_files'),
         types.InlineKeyboardButton('⚡ Bot Speed', callback_data='speed'),
-        types.InlineKeyboardButton('📞 Contact Owner', url=f'https://t.me/{YOUR_USERNAME.replace("@", "")}')
+        types.InlineKeyboardButton('📊 Statistics', callback_data='stats'),
+        types.InlineKeyboardButton('📞 Contact Owner', url=f'https://t.me/{YOUR_USERNAME.replace("@", "")}'),
+        types.InlineKeyboardButton('🤖 MPX AI', callback_data='mpx_ai')
     ]
 
     if user_id in admin_ids:
         admin_buttons = [
             types.InlineKeyboardButton('💳 Subscriptions', callback_data='subscription'), #0
-            types.InlineKeyboardButton('📊 Statistics', callback_data='stats'), #1
+            types.InlineKeyboardButton('📢 Broadcast', callback_data='broadcast'), #3
             types.InlineKeyboardButton('🔒 Lock Bot' if not bot_locked else '🔓 Unlock Bot', #2
                                      callback_data='lock_bot' if not bot_locked else 'unlock_bot'),
-            types.InlineKeyboardButton('📢 Broadcast', callback_data='broadcast'), #3
             types.InlineKeyboardButton('👑 Admin Panel', callback_data='admin_panel'), #4
             types.InlineKeyboardButton('🟢 Run All User Scripts', callback_data='run_all_scripts') #5
         ]
         markup.add(buttons[0]) # Updates
         markup.add(buttons[1], buttons[2]) # Upload, Check Files
         markup.add(buttons[3], admin_buttons[0]) # Speed, Subscriptions
-        markup.add(admin_buttons[1], admin_buttons[3]) # Stats, Broadcast
-        markup.add(admin_buttons[2], admin_buttons[5]) # Lock Bot, Run All Scripts
-        markup.add(admin_buttons[4]) # Admin Panel
-        markup.add(buttons[4]) # Contact
+        markup.add(buttons[4], admin_buttons[1]) # Stats, Broadcast
+        markup.add(admin_buttons[2], admin_buttons[4]) # Lock Bot, Run All Scripts
+        markup.add(admin_buttons[3]) # Admin Panel
+        markup.add(buttons[5], buttons[6]) # Contact, MPX AI
     else:
         markup.add(buttons[0])
         markup.add(buttons[1], buttons[2])
         markup.add(buttons[3])
-        markup.add(types.InlineKeyboardButton('📊 Statistics', callback_data='stats')) # Allow non-admins to see stats too
-        markup.add(buttons[4])
+        markup.add(buttons[4]) # Statistics
+        markup.add(buttons[5], buttons[6]) # Contact, MPX AI
+    
+    # Add Uptime button to both menus
+    markup.add(types.InlineKeyboardButton('⏱ Uptime', callback_data='uptime'))
     return markup
 
 def create_reply_keyboard_main_menu(user_id):
@@ -1106,7 +1163,7 @@ def _logic_bot_speed(message):
         bot.send_chat_action(chat_id, 'typing')
         response_time = round((time.time() - start_time_ping) * 1000, 2)
         status = "🔓 Unlocked" if not bot_locked else "🔒 Locked"
-        # mode = "💰 Free Mode: ON" if free_mode else "💸 Free Mode: OFF" # Removed free_mode
+        # mode = "💰 Free Mode: ON" if free_mode else "💸 Free Mode: OFF" # Removed
         if user_id == OWNER_ID: user_level = "👑 Owner"
         elif user_id in admin_ids: user_level = "🛡️ Admin"
         elif user_id in user_subscriptions and user_subscriptions[user_id].get('expiry', datetime.min) > datetime.now(): user_level = "⭐ Premium"
@@ -1124,6 +1181,12 @@ def _logic_contact_owner(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton('📞 Contact Owner', url=f'https://t.me/{YOUR_USERNAME.replace("@", "")}'))
     bot.reply_to(message, "Click to contact Owner:", reply_markup=markup)
+
+# --- Uptime Command ---
+def _logic_uptime(message):
+    """Show bot uptime"""
+    uptime_str = get_uptime()
+    bot.reply_to(message, f"⏱ Bot Uptime: `{uptime_str}`", parse_mode='Markdown')
 
 # --- Admin Logic Functions ---
 def _logic_subscriptions_panel(message):
@@ -1265,6 +1328,52 @@ def _logic_run_all_scripts(message_or_call):
     reply_func(summary_msg, parse_mode='Markdown')
     logger.info(f"Run all scripts finished. Admin: {admin_user_id}. Started: {started_count}. Skipped/Errors: {skipped_files}")
 
+# --- MPX AI Command Handler ---
+@bot.message_handler(commands=['mpx'])
+def handle_mpx_command(message):
+    user_id = message.from_user.id
+    if bot_locked and user_id not in admin_ids:
+        bot.reply_to(message, "⚠️ Bot is currently locked. Try again later.")
+        return
+        
+    if not message.text or len(message.text.split()) < 2:
+        bot.reply_to(message, "⚠️ Please provide a query after /mpx command.\nExample: `/mpx What is AI?`", parse_mode='Markdown')
+        return
+        
+    query = message.text.split(' ', 1)[1]
+    bot.send_chat_action(message.chat.id, 'typing')
+    
+    try:
+        headers = {
+            "Authorization": f"Bearer {A4F_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": A4F_MODEL,
+            "messages": [{"role": "user", "content": query}],
+            "temperature": 0.7
+        }
+        
+        response = requests.post(A4F_API_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        
+        result = response.json()
+        answer = result.get('choices', [{}])[0].get('message', {}).get('content', 'No response from API')
+        
+        # Split long messages to avoid Telegram's message length limit
+        if len(answer) > 4000:
+            for x in range(0, len(answer), 4000):
+                bot.reply_to(message, answer[x:x+4000], parse_mode='Markdown')
+        else:
+            bot.reply_to(message, answer, parse_mode='Markdown')
+            
+    except requests.exceptions.RequestException as e:
+        logger.error(f"API request failed: {e}")
+        bot.reply_to(message, "⚠️ Error connecting to the API. Please try again later.")
+    except Exception as e:
+        logger.error(f"Error in /mpx command: {e}")
+        bot.reply_to(message, "⚠️ An error occurred while processing your request.")
 
 # --- Command Handlers & Text Handlers for ReplyKeyboard ---
 @bot.message_handler(commands=['start', 'help'])
@@ -1272,6 +1381,21 @@ def command_send_welcome(message): _logic_send_welcome(message)
 
 @bot.message_handler(commands=['status']) # Kept for direct command
 def command_show_status(message): _logic_statistics(message) # Changed to call _logic_statistics
+
+@bot.message_handler(commands=['uptime'])
+def command_uptime(message):
+    """Handle /uptime command"""
+    _logic_uptime(message)
+
+@bot.message_handler(commands=['ping'])
+def ping(message):
+    """Handle /ping command"""
+    start_ping_time = time.time() 
+    msg = bot.reply_to(message, "Pong!")
+    latency = round((time.time() - start_ping_time) * 1000, 2)
+    uptime_str = get_uptime()
+    bot.edit_message_text(f"🏓 Pong!\n⏱ Latency: {latency} ms\n⏳ Uptime: {uptime_str}", 
+                          message.chat.id, msg.message_id)
 
 
 BUTTON_TEXT_TO_LOGIC = {
@@ -1281,12 +1405,14 @@ BUTTON_TEXT_TO_LOGIC = {
     "⚡ Bot Speed": _logic_bot_speed,
     "📞 Contact Owner": _logic_contact_owner,
     "📊 Statistics": _logic_statistics, 
+    "⏱ Uptime": _logic_uptime,  # Added Uptime button
     "💳 Subscriptions": _logic_subscriptions_panel,
     "📢 Broadcast": _logic_broadcast_init,
     "🔒 Lock Bot": _logic_toggle_lock_bot, 
-    # "💰 Free Mode": _logic_toggle_free_mode, # Removed
+  # "💰 Free Mode": _logic_toggle_free_mode, # Removed
     "🟢 Running All Code": _logic_run_all_scripts, # Added
     "👑 Admin Panel": _logic_admin_panel,
+    "🤖 MPX AI": lambda m: handle_mpx_command(m)  # Added MPX AI button handler
 }
 
 @bot.message_handler(func=lambda message: message.text in BUTTON_TEXT_TO_LOGIC)
@@ -1319,14 +1445,6 @@ def command_lock_bot(message): _logic_toggle_lock_bot(message)
 def command_admin_panel(message): _logic_admin_panel(message)
 @bot.message_handler(commands=['runningallcode']) # Added
 def command_run_all_code(message): _logic_run_all_scripts(message)
-
-
-@bot.message_handler(commands=['ping'])
-def ping(message):
-    start_ping_time = time.time() 
-    msg = bot.reply_to(message, "Pong!")
-    latency = round((time.time() - start_ping_time) * 1000, 2)
-    bot.edit_message_text(f"Pong! Latency: {latency} ms", message.chat.id, msg.message_id)
 
 
 # --- Document (File) Handler ---
@@ -1393,50 +1511,82 @@ def handle_file_upload_doc(message): # Renamed
 
 
 # --- Callback Query Handlers (for Inline Buttons) ---
-@bot.callback_query_handler(func=lambda call: True) 
+@bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
     user_id = call.from_user.id
     data = call.data
     logger.info(f"Callback: User={user_id}, Data='{data}'")
 
-    if bot_locked and user_id not in admin_ids and data not in ['back_to_main', 'speed', 'stats']: # Allow stats
+    if bot_locked and user_id not in admin_ids and data not in ['back_to_main', 'speed', 'stats', 'mpx_ai', 'uptime']:
         bot.answer_callback_query(call.id, "⚠️ Bot locked by admin.", show_alert=True)
         return
     try:
-        if data == 'upload': upload_callback(call)
-        elif data == 'check_files': check_files_callback(call)
-        elif data.startswith('file_'): file_control_callback(call)
-        elif data.startswith('start_'): start_bot_callback(call)
-        elif data.startswith('stop_'): stop_bot_callback(call)
-        elif data.startswith('restart_'): restart_bot_callback(call)
-        elif data.startswith('delete_'): delete_bot_callback(call)
-        elif data.startswith('logs_'): logs_bot_callback(call)
-        elif data == 'speed': speed_callback(call)
-        elif data == 'back_to_main': back_to_main_callback(call)
-        elif data.startswith('confirm_broadcast_'): handle_confirm_broadcast(call)
-        elif data == 'cancel_broadcast': handle_cancel_broadcast(call)
-        # --- Admin Callbacks ---
-        elif data == 'subscription': admin_required_callback(call, subscription_management_callback)
-        elif data == 'stats': stats_callback(call) # No admin check here, handled in func
-        elif data == 'lock_bot': admin_required_callback(call, lock_bot_callback)
-        elif data == 'unlock_bot': admin_required_callback(call, unlock_bot_callback)
-        # elif data == 'free_mode': admin_required_callback(call, toggle_free_mode_callback) # Removed
-        elif data == 'run_all_scripts': admin_required_callback(call, run_all_scripts_callback) # Added
-        elif data == 'broadcast': admin_required_callback(call, broadcast_init_callback) 
-        elif data == 'admin_panel': admin_required_callback(call, admin_panel_callback)
-        elif data == 'add_admin': owner_required_callback(call, add_admin_init_callback) 
-        elif data == 'remove_admin': owner_required_callback(call, remove_admin_init_callback) 
-        elif data == 'list_admins': admin_required_callback(call, list_admins_callback)
-        elif data == 'add_subscription': admin_required_callback(call, add_subscription_init_callback) 
-        elif data == 'remove_subscription': admin_required_callback(call, remove_subscription_init_callback) 
-        elif data == 'check_subscription': admin_required_callback(call, check_subscription_init_callback) 
+        if data == 'upload': 
+            upload_callback(call)
+        elif data == 'check_files': 
+            check_files_callback(call)
+        elif data.startswith('file_'): 
+            file_control_callback(call)
+        elif data.startswith('start_'): 
+            start_bot_callback(call)
+        elif data.startswith('stop_'): 
+            stop_bot_callback(call)
+        elif data.startswith('restart_'): 
+            restart_bot_callback(call)
+        elif data.startswith('delete_'): 
+            delete_bot_callback(call)
+        elif data.startswith('logs_'): 
+            logs_bot_callback(call)
+        elif data == 'speed': 
+            speed_callback(call)
+        elif data == 'back_to_main': 
+            back_to_main_callback(call)
+        elif data.startswith('confirm_broadcast_'): 
+            handle_confirm_broadcast(call)
+        elif data == 'cancel_broadcast': 
+            handle_cancel_broadcast(call)
+        elif data == 'subscription': 
+            admin_required_callback(call, subscription_management_callback)
+        elif data == 'stats': 
+            stats_callback(call)
+        elif data == 'lock_bot': 
+            admin_required_callback(call, lock_bot_callback)
+        elif data == 'unlock_bot': 
+            admin_required_callback(call, unlock_bot_callback)
+        elif data == 'run_all_scripts': 
+            admin_required_callback(call, run_all_scripts_callback)
+        elif data == 'broadcast': 
+            admin_required_callback(call, broadcast_init_callback)
+        elif data == 'admin_panel': 
+            admin_required_callback(call, admin_panel_callback)
+        elif data == 'add_admin': 
+            owner_required_callback(call, add_admin_init_callback)
+        elif data == 'remove_admin': 
+            owner_required_callback(call, remove_admin_init_callback)
+        elif data == 'list_admins': 
+            admin_required_callback(call, list_admins_callback)
+        elif data == 'add_subscription': 
+            admin_required_callback(call, add_subscription_init_callback)
+        elif data == 'remove_subscription': 
+            admin_required_callback(call, remove_subscription_init_callback)
+        elif data == 'check_subscription': 
+            admin_required_callback(call, check_subscription_init_callback)
+        elif data == 'mpx_ai':
+            bot.answer_callback_query(call.id)
+            bot.send_message(call.message.chat.id, "🤖 Please send your query using the /mpx command followed by your question.\nExample: `/mpx What is AI?`", parse_mode='Markdown')
+        elif data == 'uptime':  # Added Uptime callback
+            bot.answer_callback_query(call.id)
+            uptime_str = get_uptime()
+            bot.send_message(call.message.chat.id, f"⏱ Bot Uptime: `{uptime_str}`", parse_mode='Markdown')
         else:
             bot.answer_callback_query(call.id, "Unknown action.")
             logger.warning(f"Unhandled callback data: {data} from user {user_id}")
     except Exception as e:
         logger.error(f"Error handling callback '{data}' for {user_id}: {e}", exc_info=True)
-        try: bot.answer_callback_query(call.id, "Error processing request.", show_alert=True)
-        except Exception as e_ans: logger.error(f"Failed to answer callback after error: {e_ans}")
+        try: 
+            bot.answer_callback_query(call.id, "Error processing request.", show_alert=True)
+        except Exception as e_ans: 
+            logger.error(f"Failed to answer callback after error: {e_ans}")
 
 def admin_required_callback(call, func_to_run):
     if call.from_user.id not in admin_ids:
@@ -1495,7 +1645,7 @@ def file_control_callback(call):
         _, script_owner_id_str, file_name = call.data.split('_', 2)
         script_owner_id = int(script_owner_id_str)
         requesting_user_id = call.from_user.id
-
+        
         # Allow owner/admin to control any file, or user to control their own
         if not (requesting_user_id == script_owner_id or requesting_user_id in admin_ids):
             logger.warning(f"User {requesting_user_id} tried to access file '{file_name}' of user {script_owner_id} without permission.")
@@ -1505,9 +1655,7 @@ def file_control_callback(call):
 
         user_files_list = user_files.get(script_owner_id, [])
         if not any(f[0] == file_name for f in user_files_list):
-            logger.warning(f"File '{file_name}' not found for user {script_owner_id} during control.")
             bot.answer_callback_query(call.id, "⚠️ File not found.", show_alert=True)
-            # If admin was viewing, this might be confusing. For now, just show their own.
             check_files_callback(call) 
             return
 
@@ -2207,7 +2355,8 @@ atexit.register(cleanup)
 if __name__ == '__main__':
     logger.info("="*40 + "\n🤖 Bot Starting Up...\n" + f"🐍 Python: {sys.version.split()[0]}\n" +
                 f"🔧 Base Dir: {BASE_DIR}\n📁 Upload Dir: {UPLOAD_BOTS_DIR}\n" +
-                f"📊 Data Dir: {IROTECH_DIR}\n🔑 Owner ID: {OWNER_ID}\n🛡️ Admins: {admin_ids}\n" + "="*40)
+                f"📊 Data Dir: {IROTECH_DIR}\n🔑 Owner ID: {OWNER_ID}\n🛡️ Admins: {admin_ids}\n" + 
+                f"⏱ Start Time: {BOT_START_TIME}" + "="*40)
     keep_alive()
     logger.info("🚀 Starting polling...")
     while True:
@@ -2219,4 +2368,34 @@ if __name__ == '__main__':
             logger.critical(f"💥 Unrecoverable polling error: {e}", exc_info=True)
             logger.info("Restarting polling in 30s due to critical error..."); time.sleep(30)
         finally: logger.warning("Polling attempt finished. Will restart if in loop."); time.sleep(1)
-
+        
+# ╔════════════════════════════════════════════════════════════════════╗
+# ║                                                                    ║
+# ║   ███╗   ███╗██╗██╗      █████╗ ███╗   ██╗                         ║
+# ║   ████╗ ████║██║██║     ██╔══██╗████╗  ██║                         ║
+# ║   ██╔████╔██║██║██║     ███████║██╔██╗ ██║                         ║
+# ║   ██║╚██╔╝██║██║██║     ██╔══██║██║╚██╗██║                         ║
+# ║   ██║ ╚═╝ ██║██║███████╗██║  ██║██║ ╚████║                         ║
+# ║   ╚═╝     ╚═╝╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝                         ║
+# ║                                                                   ║
+# ║                                                                              ║
+# ║   ██╗  ██╗ ██████╗ ███████╗████████╗██╗███╗   ██╗ ██████╗                   ║
+# ║   ██║  ██║██╔═══██╗██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝                   ║
+# ║   ███████║██║   ██║███████╗   ██║   ██║██╔██╗ ██║██║  ███╗                  ║
+# ║   ██╔══██║██║   ██║╚════██║   ██║   ██║██║╚██╗██║██║   ██║                  ║
+# ║   ██║  ██║╚██████╔╝███████║   ██║   ██║██║ ╚████║╚██████╔╝                  ║
+# ║   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝                   ║
+# ║                                                                              ║
+# ║   🔥 PROJECT : Milan Hosting - Premium Python Bot Solution                 ║
+# ║   🌐 WEBSITE : https://milanxhosting.com                                     ║
+# ║   ✉️ CONTACT : contact@milanxhosting.com                                    ║
+# ║   👨‍💻 DEVELOPER : @_patelmilan07                                            ║
+# ║   ⚠️ LICENSE : Proprietary - All Rights Reserved                            ║
+# ║                                                                              ║
+# ║   "Empowering Your Digital Presence with Reliable Hosting Solutions"         ║
+# ║                                                                              ║
+# ║    🔥 Project : Milan Hosting Python Bot                         ║
+# ║    🔥 Author  : @_patelmilan07                                     ║
+# ║    🔥 License : Private - Do Not Distribute                        ║
+# ║                                                                    ║
+# ╚════════════════════════════════════════════════════════════════════╝
