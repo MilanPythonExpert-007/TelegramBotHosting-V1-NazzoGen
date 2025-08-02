@@ -90,9 +90,9 @@ def get_uptime():
 
 # --- Configuration ---
 TOKEN = '8008021512:AAGRv8fBEGVoTorA_jU5OM2hSFPUhigrKPo'
-OWNER_ID = 7666198278
-ADMIN_ID = 7666198278
-YOUR_USERNAME = '@Nexuussssex'
+OWNER_ID = 5524867269
+ADMIN_ID = 5524867269
+YOUR_USERNAME = '@patelmilan07'
 UPDATE_CHANNEL = 'https://t.me/mpx7ai'
 
 # A4F API Configuration
