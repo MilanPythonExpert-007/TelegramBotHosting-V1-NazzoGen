@@ -89,7 +89,7 @@ def get_uptime():
 # --- End Uptime Tracking ---
 
 # --- Configuration ---
-TOKEN = '8008021512:AAGRv8fBEGVoTorA_jU5OM2hSFPUhigrKPo'
+TOKEN = '8394277892:AAFuxnOrvQTeEzbN_XItYJNoD94JJ5yJjeI'
 OWNER_ID = 5524867269
 ADMIN_ID = 5524867269
 YOUR_USERNAME = '@patelmilan07'
