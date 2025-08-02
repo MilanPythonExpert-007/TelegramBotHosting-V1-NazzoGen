@@ -1,1 +1,1 @@
-worker: python hostTGbot.py
+worker: python3 hostTGbot.py
